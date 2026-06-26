@@ -4,7 +4,6 @@ import {
   FaEnvelope,
   FaUser,
   FaCalendarAlt,
-  FaCrown,
   FaEdit,
 } from "react-icons/fa";
 
@@ -13,50 +12,60 @@ export default function ProfileCard({
   onEdit,
 }) {
   const memberSince = user?.createdAt
-    ? new Date(
-        user.createdAt
-      ).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      })
+    ? new Date(user.createdAt).toLocaleDateString(
+        "en-IN",
+        {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }
+      )
     : "N/A";
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-3xl shadow-xl overflow-hidden">
 
-      {/* Header */}
-
+      {/* Cover */}
       <div className="h-32 bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-700" />
-
-      {/* Avatar */}
 
       <div className="px-8 pb-8">
 
+        {/* Avatar */}
         <div className="-mt-16">
 
-          <div className="w-32 h-32 rounded-full bg-blue-600 border-4 border-zinc-900 flex items-center justify-center text-5xl font-bold text-white shadow-lg">
+          <div className="w-32 h-32 rounded-full border-4 border-zinc-900 overflow-hidden shadow-xl bg-zinc-800">
 
-            {user?.name
-              ?.charAt(0)
-              ?.toUpperCase()}
+            {user?.profileImage ? (
+
+              <img
+                src={user.profileImage}
+                alt={user.name}
+                className="w-full h-full object-cover"
+              />
+
+            ) : (
+
+              <div className="w-full h-full bg-blue-600 flex items-center justify-center text-5xl font-bold text-white">
+
+                {user?.name?.charAt(0)?.toUpperCase()}
+
+              </div>
+
+            )}
 
           </div>
 
         </div>
 
+        {/* User Details */}
         <div className="mt-5">
 
           <h1 className="text-4xl font-extrabold text-white">
-
             {user?.name}
-
           </h1>
 
           <span className="inline-block mt-3 bg-green-600 px-4 py-1 rounded-full text-sm font-bold">
-
             {user?.role}
-
           </span>
 
         </div>
@@ -74,9 +83,7 @@ export default function ProfileCard({
               </p>
 
               <p className="text-white font-semibold">
-
                 {user?.email}
-
               </p>
 
             </div>
@@ -94,11 +101,9 @@ export default function ProfileCard({
               </p>
 
               <p className="text-white font-semibold">
-
                 {user?.isSubscribed
                   ? "Active"
                   : "Inactive"}
-
               </p>
 
             </div>
@@ -116,9 +121,7 @@ export default function ProfileCard({
               </p>
 
               <p className="text-white font-semibold">
-
                 {memberSince}
-
               </p>
 
             </div>
@@ -131,11 +134,8 @@ export default function ProfileCard({
           onClick={onEdit}
           className="mt-8 w-full bg-blue-600 hover:bg-blue-700 transition rounded-xl py-3 flex items-center justify-center gap-3 font-bold"
         >
-
           <FaEdit />
-
           Edit Profile
-
         </button>
 
       </div>

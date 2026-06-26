@@ -1,19 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import api from "@/services/api";
+
+import WinnerCard from "@/components/winner/WinnerCard";
+import UploadProofModal from "@/components/winner/UploadProofModal";
+
 import {
   FaTrophy,
   FaMoneyBillWave,
-  FaCheckCircle,
-  FaClock,
-  FaTimesCircle,
-  FaGolfBall,
 } from "react-icons/fa";
 
 export default function WinningsPage() {
-  const [winnings, setWinnings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
+
+  const [winnings, setWinnings] =
+    useState([]);
+
+  const [selectedWinner, setSelectedWinner] =
+    useState(null);
+
+  const [showModal, setShowModal] =
+    useState(false);
 
   useEffect(() => {
     getWinnings();
@@ -21,8 +31,14 @@ export default function WinningsPage() {
 
   async function getWinnings() {
     try {
-      const res = await api.get("/winner/my");
-      setWinnings(res.data.winners || []);
+      setLoading(true);
+
+      const res =
+        await api.get("/winner/my");
+
+      setWinnings(
+        res.data.winners || []
+      );
     } catch (error) {
       console.log(error);
     } finally {
@@ -30,75 +46,42 @@ export default function WinningsPage() {
     }
   }
 
-  function getStatusBadge(status) {
-    switch (status) {
-      case "APPROVED":
-        return (
-          <span className="bg-green-600 text-white px-4 py-2 rounded-full flex items-center gap-2">
-            <FaCheckCircle />
-            Approved
-          </span>
-        );
-
-      case "PAID":
-        return (
-          <span className="bg-blue-600 text-white px-4 py-2 rounded-full flex items-center gap-2">
-            <FaMoneyBillWave />
-            Paid
-          </span>
-        );
-
-      case "REJECTED":
-        return (
-          <span className="bg-red-600 text-white px-4 py-2 rounded-full flex items-center gap-2">
-            <FaTimesCircle />
-            Rejected
-          </span>
-        );
-
-      default:
-        return (
-          <span className="bg-yellow-500 text-black px-4 py-2 rounded-full flex items-center gap-2">
-            <FaClock />
-            Pending
-          </span>
-        );
-    }
-  }
+  const totalPrize =
+    winnings.reduce(
+      (sum, item) =>
+        sum + item.amount,
+      0
+    );
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex justify-center items-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+      <div className="flex justify-center items-center h-[70vh]">
 
-          <p className="text-white mt-5 text-xl">
-            Loading Winnings...
-          </p>
-        </div>
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent" />
+
       </div>
     );
   }
 
-  const totalAmount = winnings.reduce(
-    (sum, item) => sum + (item.amount || 0),
-    0
-  );
-
   return (
-    <div className="min-h-screen bg-black text-white p-6 space-y-8">
+    <div className="space-y-8">
 
       {/* Header */}
 
-      <div className="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 rounded-3xl p-8 shadow-xl">
+      <div className="bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-700 rounded-3xl p-8 shadow-xl">
 
-        <h1 className="text-5xl font-black flex items-center gap-4">
+        <h1 className="text-5xl font-black text-white flex items-center gap-4">
+
           <FaTrophy />
+
           My Winnings
+
         </h1>
 
-        <p className="mt-3 text-lg text-white/90">
-          View all your golf draw winnings and payment status.
+        <p className="text-blue-100 mt-3 text-lg">
+
+          View all your winning prizes and upload proof.
+
         </p>
 
       </div>
@@ -107,46 +90,60 @@ export default function WinningsPage() {
 
       <div className="grid md:grid-cols-2 gap-6">
 
-        <div className="bg-gradient-to-r from-green-600 to-green-800 rounded-3xl p-6">
+        <div className="bg-green-700 rounded-3xl p-6">
 
-          <p className="text-white/80">
+          <p className="text-green-100">
+
             Total Prize Won
+
           </p>
 
-          <h2 className="text-5xl font-black mt-3">
-            ₹{totalAmount}
-          </h2>
+          <h1 className="text-5xl font-black mt-3 flex items-center gap-3">
+
+            <FaMoneyBillWave />
+
+            ₹{totalPrize}
+
+          </h1>
 
         </div>
 
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-3xl p-6">
+        <div className="bg-blue-700 rounded-3xl p-6">
 
-          <p className="text-white/80">
+          <p className="text-blue-100">
+
             Total Wins
+
           </p>
 
-          <h2 className="text-5xl font-black mt-3">
+          <h1 className="text-5xl font-black mt-3">
+
             {winnings.length}
-          </h2>
+
+          </h1>
 
         </div>
 
       </div>
 
-      {/* Winning Cards */}
+      {/* Winners */}
 
       {winnings.length === 0 ? (
 
-        <div className="bg-zinc-900 rounded-3xl p-16 text-center">
+        <div className="bg-zinc-900 rounded-3xl border border-zinc-800 p-16 text-center">
 
-          <FaTrophy className="text-7xl mx-auto text-yellow-500 mb-6" />
+          <FaTrophy className="text-7xl text-yellow-500 mx-auto mb-6" />
 
-          <h2 className="text-3xl font-bold">
+          <h2 className="text-3xl font-bold text-white">
+
             No Winnings Yet
+
           </h2>
 
-          <p className="text-zinc-400 mt-4">
+          <p className="text-zinc-400 mt-3">
+
             Participate in upcoming draws to win exciting prizes.
+
           </p>
 
         </div>
@@ -155,92 +152,34 @@ export default function WinningsPage() {
 
         <div className="grid lg:grid-cols-2 gap-6">
 
-          {winnings.map((item) => (
+          {winnings.map((winner) => (
 
-            <div
-              key={item._id}
-              className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 hover:border-yellow-500 transition-all"
-            >
-
-              <div className="flex justify-between items-start">
-
-                <div>
-
-                  <h2 className="text-2xl font-bold flex items-center gap-3">
-
-                    <FaGolfBall className="text-yellow-400" />
-
-                    {item.matchCount} Matches
-
-                  </h2>
-
-                  <p className="text-zinc-500 mt-2">
-
-                    Winner Entry
-
-                  </p>
-
-                </div>
-
-                {getStatusBadge(item.status)}
-
-              </div>
-
-              <div className="mt-8 grid grid-cols-2 gap-6">
-
-                <div>
-
-                  <p className="text-zinc-400">
-                    Prize Amount
-                  </p>
-
-                  <h3 className="text-4xl font-black text-green-400 mt-2">
-
-                    ₹{item.amount}
-
-                  </h3>
-
-                </div>
-
-                <div>
-
-                  <p className="text-zinc-400">
-                    Created
-                  </p>
-
-                  <h3 className="text-lg font-semibold mt-2">
-
-                    {new Date(
-                      item.createdAt
-                    ).toLocaleDateString()}
-
-                  </h3>
-
-                </div>
-
-              </div>
-
-              {item.adminRemark && (
-
-                <div className="mt-6 bg-zinc-800 rounded-xl p-4">
-
-                  <p className="text-zinc-400">
-                    Admin Remark
-                  </p>
-
-                  <p className="mt-2">
-                    {item.adminRemark}
-                  </p>
-
-                </div>
-
-              )}
-
-            </div>
+            <WinnerCard
+              key={winner._id}
+              winner={winner}
+              onUpload={(item) => {
+                setSelectedWinner(item);
+                setShowModal(true);
+              }}
+            />
 
           ))}
 
         </div>
+
+      )}
+
+      {/* Upload Modal */}
+
+      {showModal && selectedWinner && (
+
+        <UploadProofModal
+          winner={selectedWinner}
+          onClose={() =>
+            setShowModal(false)
+          }
+          onSuccess={getWinnings}
+        />
 
       )}
 

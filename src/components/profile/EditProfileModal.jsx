@@ -50,11 +50,10 @@ export default function EditProfileModal({
         res.data.imageUrl
       );
 
-      setForm({
-        ...form,
-        profileImage:
-          res.data.imageUrl,
-      });
+     setForm((prev) => ({
+  ...prev,
+  profileImage: res.data.imageUrl,
+}));
 
       toast.success(
         "Image Uploaded"
@@ -65,36 +64,37 @@ export default function EditProfileModal({
       );
     }
   };
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit =
-    async (e) => {
-      e.preventDefault();
+  try {
+    setLoading(true);
 
-      try {
-        setLoading(true);
+    console.log("Submitting Form:", form);
 
-        await api.put(
-          "/auth/profile",
-          form
-        );
+    const res = await api.put(
+      "/auth/profile",
+      form
+    );
 
-        toast.success(
-          "Profile Updated"
-        );
+    console.log("Profile Update Response:", res.data);
 
-        onSuccess();
+    toast.success("Profile Updated");
 
-        onClose();
-      } catch (err) {
-        toast.error(
-          err.response?.data
-            ?.message ||
-            "Update Failed"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+    onSuccess();
+
+    onClose();
+  } catch (err) {
+    console.log(err.response?.data);
+
+    toast.error(
+      err.response?.data?.message ||
+      "Update Failed"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
