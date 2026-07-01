@@ -1,39 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import api from "@/services/api";
 import toast from "react-hot-toast";
+import api from "@/services/api";
 
-import CharitySearch from "@/components/admin/charity/CharitySearch";
+import CharityStats from "@/components/admin/charity/CharityStats";
 import CharityTable from "@/components/admin/charity/CharityTable";
+
 import AddCharityModal from "@/components/admin/charity/AddCharityModal";
 import EditCharityModal from "@/components/admin/charity/EditCharityModal";
 import DeleteCharityModal from "@/components/admin/charity/DeleteCharityModal";
 
-import {
-  FaPlus,
-  FaHandsHelping,
-} from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 
-export default function AdminCharities() {
+export default function CharityManagement() {
+
   const [charities, setCharities] = useState([]);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [search, setSearch] =
-    useState("");
+  const [addOpen, setAddOpen] = useState(false);
 
-  const [showAdd, setShowAdd] =
-    useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
-  const [editCharity, setEditCharity] =
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const [selectedCharity, setSelectedCharity] =
     useState(null);
-
-  const [
-    deleteCharity,
-    setDeleteCharity,
-  ] = useState(null);
 
   useEffect(() => {
     fetchCharities();
@@ -43,234 +36,181 @@ export default function AdminCharities() {
     try {
       setLoading(true);
 
-      const res =
-        await api.get("/charity");
+      const res = await api.get("/charity");
 
-      setCharities(
-        res.data.charities
-      );
-    } catch {
-      toast.error(
-        "Unable to load charities"
-      );
+      setCharities(res.data.charities || []);
+    } catch (error) {
+      toast.error("Unable to load charities");
     } finally {
       setLoading(false);
     }
   }
 
-  async function removeCharity(id) {
-    try {
-      await api.delete(
-        `/charity/${id}`
-      );
-
-      toast.success(
-        "Charity Deleted"
-      );
-
-      fetchCharities();
-    } catch {
-      toast.error(
-        "Delete Failed"
-      );
-    }
+  function handleEdit(charity) {
+    setSelectedCharity(charity);
+    setEditOpen(true);
   }
 
-  const filtered =
-    charities.filter(
-      (item) =>
-        item.name
-          ?.toLowerCase()
-          .includes(
-            search.toLowerCase()
-          ) ||
-        item.description
-          ?.toLowerCase()
-          .includes(
-            search.toLowerCase()
-          )
+  function handleDelete(charity) {
+    setSelectedCharity(charity);
+    setDeleteOpen(true);
+  }
+
+  if (loading && charities.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-[70vh] bg-zinc-950">
+
+        <div className="flex flex-col items-center gap-3">
+
+          <div className="w-10 h-10 rounded-full border-4 border-emerald-600 border-t-transparent animate-spin" />
+
+          <p className="text-zinc-400">
+            Loading charities...
+          </p>
+
+        </div>
+
+      </div>
     );
+  }
 
   return (
-    <div className="space-y-8">
+
+    <div className="min-h-screen bg-zinc-950 text-white p-4 md:p-8 space-y-8">
 
       {/* Header */}
 
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-5">
 
         <div>
 
-          <h1 className="text-4xl font-bold text-white">
+          <h1 className="text-4xl font-black">
+
             Charity Management
+
           </h1>
 
           <p className="text-zinc-400 mt-2">
-            Manage all charity
-            organizations.
+
+            Create, Update and Manage Charity Campaigns.
+
           </p>
 
         </div>
 
         <button
-          onClick={() =>
-            setShowAdd(true)
-          }
-          className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl flex items-center gap-3 font-bold"
+          onClick={() => setAddOpen(true)}
+          className="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-xl flex items-center gap-3 font-bold transition"
         >
+
           <FaPlus />
 
           Add Charity
+
         </button>
 
       </div>
 
-      {/* Statistics */}
+      {/* Stats */}
 
-      <div className="grid md:grid-cols-3 gap-6">
-
-        <div className="bg-gradient-to-r from-blue-700 to-blue-900 rounded-2xl p-6">
-
-          <FaHandsHelping className="text-4xl mb-4" />
-
-          <p>Total Charities</p>
-
-          <h2 className="text-4xl font-bold">
-
-            {charities.length}
-
-          </h2>
-
-        </div>
-
-        <div className="bg-gradient-to-r from-green-700 to-green-900 rounded-2xl p-6">
-
-          <h3 className="text-lg">
-
-            Total Events
-
-          </h3>
-
-          <h2 className="text-4xl font-bold mt-3">
-
-            {charities.reduce(
-              (sum, item) =>
-                sum +
-                (item.events
-                  ?.length ||
-                  0),
-              0
-            )}
-
-          </h2>
-
-        </div>
-
-        <div className="bg-gradient-to-r from-purple-700 to-purple-900 rounded-2xl p-6">
-
-          <h3 className="text-lg">
-
-            Featured
-
-          </h3>
-
-          <h2 className="text-4xl font-bold mt-3">
-
-            {
-              charities.filter(
-                (c) =>
-                  c.featured
-              ).length
-            }
-
-          </h2>
-
-        </div>
-
-      </div>
-
-      {/* Search */}
-
-      <CharitySearch
-        value={search}
-        onChange={
-          setSearch
-        }
-      />
+      <CharityStats charities={charities} />
 
       {/* Table */}
 
       <CharityTable
-        loading={
-          loading
-        }
-        charities={
-          filtered
-        }
-        onEdit={
-          setEditCharity
-        }
-        onDelete={
-          setDeleteCharity
-        }
+
+        loading={loading}
+
+        charities={charities}
+
+        onEdit={handleEdit}
+
+        onDelete={handleDelete}
+
       />
 
       {/* Add */}
 
-      {showAdd && (
+      {addOpen && (
+
         <AddCharityModal
-          onClose={() =>
-            setShowAdd(
-              false
-            )
-          }
-          onSuccess={
-            fetchCharities
-          }
+
+          onClose={() => setAddOpen(false)}
+
+          onSuccess={() => {
+
+            setAddOpen(false);
+
+            fetchCharities();
+
+          }}
+
         />
+
       )}
 
       {/* Edit */}
 
-      {editCharity && (
+      {editOpen && selectedCharity && (
+
         <EditCharityModal
-          charity={
-            editCharity
-          }
-          onClose={() =>
-            setEditCharity(
-              null
-            )
-          }
-          onSuccess={
-            fetchCharities
-          }
+
+          charity={selectedCharity}
+
+          onClose={() => {
+
+            setEditOpen(false);
+
+            setSelectedCharity(null);
+
+          }}
+
+          onSuccess={() => {
+
+            setEditOpen(false);
+
+            setSelectedCharity(null);
+
+            fetchCharities();
+
+          }}
+
         />
+
       )}
 
       {/* Delete */}
 
-      {deleteCharity && (
-        <DeleteCharityModal
-          charity={
-            deleteCharity
-          }
-          onClose={() =>
-            setDeleteCharity(
-              null
-            )
-          }
-          onDelete={() => {
-            removeCharity(
-              deleteCharity._id
-            );
+      {deleteOpen && selectedCharity && (
 
-            setDeleteCharity(
-              null
-            );
+        <DeleteCharityModal
+
+          charity={selectedCharity}
+
+          onClose={() => {
+
+            setDeleteOpen(false);
+
+            setSelectedCharity(null);
+
           }}
+
+          onSuccess={() => {
+
+            setDeleteOpen(false);
+
+            setSelectedCharity(null);
+
+            fetchCharities();
+
+          }}
+
         />
+
       )}
 
     </div>
+
   );
+
 }

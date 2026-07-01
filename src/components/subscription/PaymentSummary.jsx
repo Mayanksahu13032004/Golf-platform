@@ -3,234 +3,294 @@
 import {
   FaMoneyBillWave,
   FaHeart,
-  FaWallet,
-  FaCheckCircle,
+  FaGift,
   FaCalendarAlt,
+  FaCheckCircle,
+  FaReceipt,
 } from "react-icons/fa";
 
 export default function PaymentSummary({
   subscription,
 }) {
-  if (!subscription) return null;
+  if (!subscription) {
+    return (
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
 
-  const membershipFee =
-    subscription.amount || 499;
+        <h2 className="text-2xl font-bold text-white mb-3">
 
-  const prizePool =
-    subscription.prizePoolContribution || 0;
+          Payment Summary
 
-  const charity =
-    subscription.charityContribution || 0;
+        </h2>
 
-  const renewal =
-    subscription.endDate
-      ? new Date(
-          subscription.endDate
-        ).toLocaleDateString(
-          "en-IN",
-          {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-          }
-        )
-      : "N/A";
+        <p className="text-zinc-400">
 
-  const cards = [
-    {
-      title:
-        "Membership Fee",
-      value: `₹${membershipFee}`,
-      icon: (
-        <FaWallet className="text-3xl text-blue-400" />
-      ),
-      bg: "from-blue-700 to-blue-900",
-    },
+          No payment history available.
 
-    {
-      title:
-        "Prize Pool",
-      value: `₹${prizePool}`,
-      icon: (
-        <FaMoneyBillWave className="text-3xl text-green-400" />
-      ),
-      bg: "from-green-700 to-green-900",
-    },
+        </p>
 
-    {
-      title:
-        "Charity",
-      value: `₹${charity}`,
-      icon: (
-        <FaHeart className="text-3xl text-red-400" />
-      ),
-      bg: "from-red-700 to-red-900",
-    },
-  ];
+      </div>
+    );
+  }
 
   return (
-    <section className="space-y-8">
+    <section className="mt-12">
 
-      <div>
+      {/* Heading */}
 
-        <h2 className="text-4xl font-bold text-white">
+      <div className="mb-8">
+
+        <h2 className="text-3xl font-black text-white">
+
           Payment Summary
+
         </h2>
 
         <p className="text-zinc-400 mt-2">
-          Overview of your current membership contribution.
+
+          Overview of your latest membership payment.
+
         </p>
 
       </div>
 
-      {/* Cards */}
+      {/* Summary Grid */}
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
-        {cards.map((item) => (
+        {/* Amount */}
 
-          <div
-            key={item.title}
-            className={`bg-gradient-to-r ${item.bg} rounded-3xl p-6 shadow-xl`}
-          >
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
 
-            <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
 
-              <div>
+            <div className="w-14 h-14 rounded-xl bg-green-600 flex items-center justify-center">
 
-                <p className="text-white/80">
+              <FaMoneyBillWave className="text-2xl text-white"/>
 
-                  {item.title}
+            </div>
 
-                </p>
+            <div>
 
-                <h2 className="text-4xl font-bold mt-3 text-white">
+              <p className="text-zinc-400">
 
-                  {item.value}
+                Amount Paid
 
-                </h2>
+              </p>
 
-              </div>
+              <h2 className="text-3xl font-bold text-green-400">
 
-              {item.icon}
+                ₹{subscription.amount}
+
+              </h2>
 
             </div>
 
           </div>
 
-        ))}
+        </div>
+
+        {/* Charity */}
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+
+          <div className="flex items-center gap-4">
+
+            <div className="w-14 h-14 rounded-xl bg-red-600 flex items-center justify-center">
+
+              <FaHeart className="text-2xl text-white"/>
+
+            </div>
+
+            <div>
+
+              <p className="text-zinc-400">
+
+                Charity Contribution
+
+              </p>
+
+              <h2 className="text-3xl font-bold text-red-400">
+
+                ₹{subscription.charityContribution}
+
+              </h2>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Prize Pool */}
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+
+          <div className="flex items-center gap-4">
+
+            <div className="w-14 h-14 rounded-xl bg-blue-600 flex items-center justify-center">
+
+              <FaGift className="text-2xl text-white"/>
+
+            </div>
+
+            <div>
+
+              <p className="text-zinc-400">
+
+                Prize Pool
+
+              </p>
+
+              <h2 className="text-3xl font-bold text-blue-400">
+
+                ₹{subscription.prizePoolContribution}
+
+              </h2>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Start Date */}
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+
+          <div className="flex items-center gap-4">
+
+            <FaCalendarAlt className="text-3xl text-yellow-400"/>
+
+            <div>
+
+              <p className="text-zinc-400">
+
+                Start Date
+
+              </p>
+
+              <h2 className="text-xl font-bold text-white">
+
+                {new Date(
+                  subscription.startDate
+                ).toLocaleDateString("en-IN")}
+
+              </h2>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* End Date */}
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+
+          <div className="flex items-center gap-4">
+
+            <FaCalendarAlt className="text-3xl text-purple-400"/>
+
+            <div>
+
+              <p className="text-zinc-400">
+
+                Expiry Date
+
+              </p>
+
+              <h2 className="text-xl font-bold text-white">
+
+                {new Date(
+                  subscription.endDate
+                ).toLocaleDateString("en-IN")}
+
+              </h2>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Status */}
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+
+          <div className="flex items-center gap-4">
+
+            <FaCheckCircle className="text-3xl text-green-400"/>
+
+            <div>
+
+              <p className="text-zinc-400">
+
+                Status
+
+              </p>
+
+              <h2 className="text-xl font-bold text-green-400">
+
+                {subscription.status}
+
+              </h2>
+
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
 
-      {/* Summary */}
+      {/* Payment Info */}
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 mt-8">
 
-        <h2 className="text-2xl font-bold text-white mb-8">
+        <div className="flex items-center gap-3 mb-5">
 
-          Membership Details
+          <FaReceipt className="text-2xl text-cyan-400"/>
 
-        </h2>
+          <h2 className="text-2xl font-bold text-white">
 
-        <div className="space-y-6">
+            Payment Information
 
-          <div className="flex justify-between border-b border-zinc-800 pb-4">
+          </h2>
 
-            <span className="text-zinc-400">
+        </div>
 
-              Status
+        <div className="grid md:grid-cols-2 gap-6">
 
-            </span>
+          <div>
 
-            <span className="flex items-center gap-2 text-green-400 font-bold">
-
-              <FaCheckCircle />
-
-              ACTIVE
-
-            </span>
-
-          </div>
-
-          <div className="flex justify-between border-b border-zinc-800 pb-4">
-
-            <span className="text-zinc-400">
+            <p className="text-zinc-400">
 
               Plan
 
-            </span>
+            </p>
 
-            <span className="text-white font-semibold">
+            <p className="text-white font-bold text-lg mt-2">
 
               {subscription.plan}
 
-            </span>
+            </p>
 
           </div>
 
-          <div className="flex justify-between border-b border-zinc-800 pb-4">
+          <div>
 
-            <span className="text-zinc-400">
+            <p className="text-zinc-400">
 
-              Membership Fee
+              Payment Reference
 
-            </span>
+            </p>
 
-            <span className="text-white font-semibold">
+            <p className="text-green-400 break-all mt-2">
 
-              ₹{membershipFee}
+              {subscription.paymentIntent ||
+                "N/A"}
 
-            </span>
-
-          </div>
-
-          <div className="flex justify-between border-b border-zinc-800 pb-4">
-
-            <span className="text-zinc-400">
-
-              Prize Pool Contribution
-
-            </span>
-
-            <span className="text-green-400 font-bold">
-
-              ₹{prizePool}
-
-            </span>
-
-          </div>
-
-          <div className="flex justify-between border-b border-zinc-800 pb-4">
-
-            <span className="text-zinc-400">
-
-              Charity Contribution
-
-            </span>
-
-            <span className="text-red-400 font-bold">
-
-              ₹{charity}
-
-            </span>
-
-          </div>
-
-          <div className="flex justify-between">
-
-            <span className="flex items-center gap-2 text-zinc-400">
-
-              <FaCalendarAlt />
-
-              Renewal Date
-
-            </span>
-
-            <span className="text-white font-semibold">
-
-              {renewal}
-
-            </span>
+            </p>
 
           </div>
 

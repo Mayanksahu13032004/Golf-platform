@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 
 import connectDB from "@/lib/db";
 import Charity from "@/models/Charity";
-
+import { adminAuth } from "@/middleware/adminMiddleware";
 export async function GET(request, { params }) {
   try {
+        await adminAuth();
     await connectDB();
 
     const { id } = await params;

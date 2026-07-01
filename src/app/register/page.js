@@ -19,11 +19,11 @@ export default function Register() {
     e.preventDefault();
 
     // 1. Client-side Gmail check
-    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-    if (!gmailRegex.test(form.email)) {
-      toast.error("Please use a valid @gmail.com address");
-      return;
-    }
+    // const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    // if (!gmailRegex.test(form.email)) {
+    //   toast.error("Please use a valid @gmail.com address");
+    //   return;
+    // }
 
     // 2. Client-side Password strength check
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;

@@ -78,7 +78,7 @@ export default function UploadProofModal({
       setLoading(true);
 
       await api.post(
-        "/winner/proof",
+        "/winner/upload-proof",
         {
           winnerId: winner._id,
           proofImage,

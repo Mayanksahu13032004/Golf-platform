@@ -9,13 +9,45 @@ export async function POST(request) {
   try {
     await connectDB();
 
-    const authUser =
-      await getAuthUser();
+    const authUser = await getAuthUser();
 
-    const {
-      plan,
-      charityPercentage,
-    } = await request.json();
+    const body = await request.json();
+
+    const plan = body.plan || "MONTHLY";
+
+    const charityPercentage = Number(
+      body.charityPercentage ?? 10
+    );
+
+    // Validation
+
+    if (!["MONTHLY", "YEARLY"].includes(plan)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid subscription plan",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (
+      isNaN(charityPercentage) ||
+      charityPercentage < 0 ||
+      charityPercentage > 100
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid charity percentage",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
     const amount =
       plan === "YEARLY"
@@ -23,19 +55,14 @@ export async function POST(request) {
         : 500;
 
     const charityContribution =
-      (amount *
-        charityPercentage) /
-      100;
+      (amount * charityPercentage) / 100;
 
     const prizePoolContribution =
-      (amount -
-        charityContribution) *
-      0.5;
+      (amount - charityContribution) * 0.5;
 
     const startDate = new Date();
 
-    const endDate =
-      new Date();
+    const endDate = new Date();
 
     if (plan === "MONTHLY") {
       endDate.setMonth(
@@ -47,16 +74,46 @@ export async function POST(request) {
       );
     }
 
+    // Optional: prevent duplicate active subscriptions
+
+    const existing =
+      await Subscription.findOne({
+        userId: authUser.id,
+        status: "ACTIVE",
+      });
+
+    if (existing) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Active subscription already exists",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     const subscription =
       await Subscription.create({
         userId: authUser.id,
+
         plan,
+
         amount,
+
         charityPercentage,
+
         charityContribution,
+
         prizePoolContribution,
+
         startDate,
+
         endDate,
+
+        status: "ACTIVE",
       });
 
     await User.findByIdAndUpdate(
@@ -64,12 +121,15 @@ export async function POST(request) {
       {
         isSubscribed: true,
         subscriptionType: plan,
+        charityPercentage,
       }
     );
 
     return NextResponse.json(
       {
         success: true,
+        message:
+          "Subscription Created Successfully",
         subscription,
       },
       {
@@ -77,6 +137,8 @@ export async function POST(request) {
       }
     );
   } catch (error) {
+    console.log(error);
+
     return NextResponse.json(
       {
         success: false,
@@ -88,7 +150,6 @@ export async function POST(request) {
     );
   }
 }
-
 
 export async function GET() {
   try {
@@ -114,7 +175,9 @@ export async function GET() {
         success: false,
         error: error.message,
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

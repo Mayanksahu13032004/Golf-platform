@@ -1,79 +1,67 @@
 "use client";
 
 import { useState } from "react";
-import api from "@/services/api";
 import toast from "react-hot-toast";
+import api from "@/services/api";
 
 import {
   FaTimes,
   FaPlus,
   FaTrash,
-  FaCloudUploadAlt,
-  FaSave,
 } from "react-icons/fa";
 
-export default function AddCharityModal({
+export default function EditCharityModal({
+  charity,
   onClose,
   onSuccess,
 }) {
   const [loading, setLoading] =
     useState(false);
 
-  const [uploading, setUploading] =
-    useState(false);
-
-  const [event, setEvent] =
-    useState("");
-
   const [form, setForm] =
     useState({
-      name: "",
-      description: "",
-      image: "",
-      featured: false,
-      events: [],
+      name: charity.name || "",
+      description:
+        charity.description || "",
+      image: charity.image || "",
+      featured:
+        charity.featured || false,
+      events:
+        charity.events || [],
     });
 
-  async function uploadImage(file) {
-    try {
-      setUploading(true);
+  const [event, setEvent] =
+    useState({
+      title: "",
+      date: "",
+    });
 
-      const data = new FormData();
+  function handleChange(e) {
+    const {
+      name,
+      value,
+      type,
+      checked,
+    } = e.target;
 
-      data.append("file", file);
-
-      const res =
-        await api.post(
-          "/upload",
-          data,
-          {
-            headers: {
-              "Content-Type":
-                "multipart/form-data",
-            },
-          }
-        );
-
-      setForm((prev) => ({
-        ...prev,
-        image:
-          res.data.imageUrl,
-      }));
-
-      toast.success(
-        "Image Uploaded"
-      );
-    } catch {
-      toast.error(
-        "Upload Failed"
-      );
-    } finally {
-      setUploading(false);
-    }
+    setForm((prev) => ({
+      ...prev,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value,
+    }));
   }
 
   function addEvent() {
-    if (!event.trim()) return;
+    if (
+      !event.title ||
+      !event.date
+    ) {
+      return toast.error(
+        "Enter event title and date"
+      );
+    }
 
     setForm((prev) => ({
       ...prev,
@@ -83,7 +71,10 @@ export default function AddCharityModal({
       ],
     }));
 
-    setEvent("");
+    setEvent({
+      title: "",
+      date: "",
+    });
   }
 
   function removeEvent(index) {
@@ -97,51 +88,52 @@ export default function AddCharityModal({
     }));
   }
 
-  async function saveCharity(e) {
+  async function submit(e) {
     e.preventDefault();
 
     try {
       setLoading(true);
 
-      await api.post(
-        "/charity",
+      await api.put(
+        `/charity/${charity._id}`,
         form
       );
 
       toast.success(
-        "Charity Created"
+        "Charity Updated"
       );
 
       onSuccess();
 
-      onClose();
     } catch (err) {
+
       toast.error(
         err.response?.data
-          ?.message ||
-          "Creation Failed"
+          ?.error ||
+          "Unable to update"
       );
+
     } finally {
+
       setLoading(false);
+
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+    <div className="fixed inset-0 z-50 bg-black/70 flex justify-center items-center p-4">
 
-      <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-3xl max-h-[95vh] overflow-y-auto">
+      <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
 
-        {/* Header */}
+        <div className="flex justify-between items-center border-b border-zinc-800 p-6">
 
-        <div className="flex justify-between items-center p-6 border-b border-zinc-800">
-
-          <h2 className="text-3xl font-bold text-white">
-            Add Charity
+          <h2 className="text-2xl font-bold">
+            Edit Charity
           </h2>
 
           <button
             onClick={onClose}
-            className="text-white text-2xl"
+            className="text-2xl"
           >
             <FaTimes />
           </button>
@@ -149,148 +141,165 @@ export default function AddCharityModal({
         </div>
 
         <form
-          onSubmit={
-            saveCharity
-          }
+          onSubmit={submit}
           className="p-6 space-y-6"
         >
 
-          {/* Name */}
-
           <div>
 
-            <label className="text-white font-semibold block mb-2">
+            <label>
               Charity Name
             </label>
 
             <input
+              name="name"
               required
               value={form.name}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  name:
-                    e.target.value,
-                })
+              onChange={
+                handleChange
               }
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-white"
+              className="w-full mt-2 bg-zinc-800 rounded-xl p-3"
             />
 
           </div>
 
-          {/* Description */}
-
           <div>
 
-            <label className="text-white font-semibold block mb-2">
+            <label>
               Description
             </label>
 
             <textarea
-              rows={4}
+              rows={5}
               required
+              name="description"
               value={
                 form.description
               }
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  description:
-                    e.target.value,
-                })
+              onChange={
+                handleChange
               }
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-white"
+              className="w-full mt-2 bg-zinc-800 rounded-xl p-3"
             />
 
           </div>
 
-          {/* Image */}
-
           <div>
 
-            <label className="text-white font-semibold block mb-3">
-              Charity Image
+            <label>
+              Image URL
             </label>
 
-            {form.image && (
-              <img
-                src={
-                  form.image
-                }
-                className="w-full h-52 object-cover rounded-xl mb-4"
-                alt=""
-              />
-            )}
-
-            <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 px-5 py-3 rounded-xl inline-flex items-center gap-3">
-
-              <FaCloudUploadAlt />
-
-              {uploading
-                ? "Uploading..."
-                : "Upload Image"}
-
-              <input
-                hidden
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  uploadImage(
-                    e.target
-                      .files[0]
-                  )
-                }
-              />
-
-            </label>
+            <input
+              name="image"
+              value={form.image}
+              onChange={
+                handleChange
+              }
+              className="w-full mt-2 bg-zinc-800 rounded-xl p-3"
+            />
 
           </div>
 
-          {/* Events */}
+          <label className="flex items-center gap-3">
 
-          <div>
+            <input
+              type="checkbox"
+              name="featured"
+              checked={
+                form.featured
+              }
+              onChange={
+                handleChange
+              }
+            />
 
-            <label className="text-white font-semibold block mb-3">
+            Featured Charity
+
+          </label>
+
+          <div className="border border-zinc-700 rounded-2xl p-5 space-y-4">
+
+            <h3 className="font-bold text-xl">
               Events
-            </label>
+            </h3>
 
-            <div className="flex gap-3">
+            <div className="grid md:grid-cols-2 gap-4">
 
               <input
-                value={event}
-                onChange={(e) =>
-                  setEvent(
-                    e.target.value
-                  )
+                placeholder="Event Title"
+                value={
+                  event.title
                 }
-                placeholder="Event Name"
-                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-white"
+                onChange={(e) =>
+                  setEvent({
+                    ...event,
+                    title:
+                      e.target.value,
+                  })
+                }
+                className="bg-zinc-800 rounded-xl p-3"
               />
 
-              <button
-                type="button"
-                onClick={
-                  addEvent
+              <input
+                type="date"
+                value={
+                  event.date
                 }
-                className="bg-green-600 px-5 rounded-xl"
-              >
-                <FaPlus />
-              </button>
+                onChange={(e) =>
+                  setEvent({
+                    ...event,
+                    date:
+                      e.target.value,
+                  })
+                }
+                className="bg-zinc-800 rounded-xl p-3"
+              />
 
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={
+                addEvent
+              }
+              className="bg-blue-600 hover:bg-blue-700 px-5 py-3 rounded-xl flex items-center gap-2"
+            >
+
+              <FaPlus />
+
+              Add Event
+
+            </button>
+
+            <div className="space-y-3">
 
               {form.events.map(
                 (
                   item,
                   index
                 ) => (
+
                   <div
                     key={index}
-                    className="bg-blue-600 rounded-full px-4 py-2 flex items-center gap-3"
+                    className="bg-zinc-800 rounded-xl p-4 flex justify-between items-center"
                   >
-                    {item}
+
+                    <div>
+
+                      <p className="font-bold">
+
+                        {item.title}
+
+                      </p>
+
+                      <p className="text-zinc-400">
+
+                        {item.date}
+
+                      </p>
+
+                    </div>
 
                     <button
                       type="button"
@@ -299,11 +308,15 @@ export default function AddCharityModal({
                           index
                         )
                       }
+                      className="bg-red-600 p-3 rounded-lg"
                     >
+
                       <FaTrash />
+
                     </button>
 
                   </div>
+
                 )
               )}
 
@@ -311,59 +324,16 @@ export default function AddCharityModal({
 
           </div>
 
-          {/* Featured */}
+          <button
+            disabled={loading}
+            className="w-full bg-yellow-500 hover:bg-yellow-400 text-black rounded-xl p-4 font-bold"
+          >
 
-          <div className="flex items-center gap-4">
+            {loading
+              ? "Updating..."
+              : "Update Charity"}
 
-            <input
-              type="checkbox"
-              checked={
-                form.featured
-              }
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  featured:
-                    e.target.checked,
-                })
-              }
-              className="w-5 h-5"
-            />
-
-            <span className="text-white">
-              Featured Charity
-            </span>
-
-          </div>
-
-          {/* Footer */}
-
-          <div className="flex justify-end gap-4 pt-4">
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-zinc-700 px-6 py-3 rounded-xl"
-            >
-              Cancel
-            </button>
-
-            <button
-              disabled={
-                loading
-              }
-              className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl flex items-center gap-3"
-            >
-
-              <FaSave />
-
-              {loading
-                ? "Saving..."
-                : "Create Charity"}
-
-            </button>
-
-          </div>
+          </button>
 
         </form>
 

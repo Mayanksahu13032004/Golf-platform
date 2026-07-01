@@ -44,6 +44,11 @@ const SubscriptionSchema = new mongoose.Schema(
       required: true,
     },
 
+paymentIntent: {
+  type: String,
+  unique: true,
+},
+
     status: {
       type: String,
       enum: ["ACTIVE", "EXPIRED", "CANCELLED"],

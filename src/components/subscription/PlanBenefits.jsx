@@ -1,94 +1,110 @@
 "use client";
 
 import {
-  FaGolfBall,
-  FaHeart,
-  FaGift,
-  FaChartLine,
-  FaEnvelope,
   FaTrophy,
+  FaGift,
+  FaHeart,
+  FaEnvelope,
+  FaLock,
+  FaChartLine,
 } from "react-icons/fa";
 
 export default function PlanBenefits() {
   const benefits = [
     {
-      title: "Monthly Golf Draws",
+      title: "Monthly Golf Draw",
       description:
-        "Participate in exciting monthly golf prize draws.",
-      icon: <FaGolfBall className="text-4xl text-blue-400" />,
+        "Participate automatically in every monthly golf charity draw.",
+      icon: <FaTrophy className="text-4xl text-yellow-400" />,
+      color: "from-yellow-500 to-orange-500",
     },
     {
-      title: "Charity Contribution",
+      title: "Prize Pool",
       description:
-        "A portion of every subscription supports charity organizations.",
-      icon: <FaHeart className="text-4xl text-red-400" />,
-    },
-    {
-      title: "Cash Rewards",
-      description:
-        "Win attractive prizes every month based on your golf scores.",
+        "Become eligible to win exciting cash rewards from the prize pool.",
       icon: <FaGift className="text-4xl text-green-400" />,
+      color: "from-green-500 to-emerald-600",
     },
     {
-      title: "Performance Dashboard",
+      title: "Support Charity",
       description:
-        "Track scores, winnings, subscriptions and progress.",
-      icon: <FaChartLine className="text-4xl text-yellow-400" />,
+        "A portion of your subscription directly supports charitable causes.",
+      icon: <FaHeart className="text-4xl text-red-400" />,
+      color: "from-red-500 to-pink-600",
     },
     {
-      title: "Email Notifications",
+      title: "Winner Notifications",
       description:
-        "Receive winner announcements and important updates instantly.",
-      icon: <FaEnvelope className="text-4xl text-purple-400" />,
+        "Receive instant email notifications whenever you win a draw.",
+      icon: <FaEnvelope className="text-4xl text-blue-400" />,
+      color: "from-blue-500 to-cyan-600",
     },
     {
-      title: "Verified Winners",
+      title: "Secure Payments",
       description:
-        "Secure prize verification with document upload and admin approval.",
-      icon: <FaTrophy className="text-4xl text-orange-400" />,
+        "All payments are protected with Stripe's industry-leading security.",
+      icon: <FaLock className="text-4xl text-purple-400" />,
+      color: "from-purple-500 to-indigo-600",
+    },
+    {
+      title: "Premium Dashboard",
+      description:
+        "Track subscriptions, winnings, scores and payment history.",
+      icon: <FaChartLine className="text-4xl text-cyan-400" />,
+      color: "from-cyan-500 to-sky-600",
     },
   ];
 
   return (
-    <section>
+    <section className="mt-12">
 
-      <div className="mb-8">
+      {/* Heading */}
 
-        <h2 className="text-4xl font-bold text-white">
-          Why Choose Our Membership?
+      <div className="text-center mb-10">
+
+        <h2 className="text-3xl md:text-4xl font-black text-white">
+
+          Membership Benefits
+
         </h2>
 
-        <p className="text-zinc-400 mt-3">
-          Unlock exclusive golf experiences while making a positive
-          impact through charitable contributions.
+        <p className="text-zinc-400 mt-3 max-w-2xl mx-auto">
+
+          Unlock premium golf features, participate in charity draws,
+          win exciting rewards and support meaningful causes.
+
         </p>
 
       </div>
 
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {/* Cards */}
 
-        {benefits.map((benefit) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+
+        {benefits.map((item) => (
 
           <div
-            key={benefit.title}
-            className="bg-zinc-900 border border-zinc-800 hover:border-blue-500 rounded-2xl p-6 transition duration-300 hover:-translate-y-2 hover:shadow-2xl"
+            key={item.title}
+            className="group bg-zinc-900 border border-zinc-800 hover:border-blue-500 rounded-3xl p-7 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
           >
 
-            <div className="mb-5">
+            <div
+              className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${item.color} flex items-center justify-center mb-6`}
+            >
 
-              {benefit.icon}
+              {item.icon}
 
             </div>
 
-            <h3 className="text-2xl font-bold text-white mb-3">
+            <h3 className="text-2xl font-bold text-white">
 
-              {benefit.title}
+              {item.title}
 
             </h3>
 
-            <p className="text-zinc-400 leading-7">
+            <p className="text-zinc-400 mt-4 leading-7">
 
-              {benefit.description}
+              {item.description}
 
             </p>
 

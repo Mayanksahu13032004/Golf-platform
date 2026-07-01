@@ -1,229 +1,315 @@
 "use client";
 
+import { useState } from "react";
+import toast from "react-hot-toast";
+import api from "@/services/api";
+
 import {
-  FaEdit,
+  FaTimes,
+  FaPlus,
   FaTrash,
-  FaEye,
-  FaStar,
 } from "react-icons/fa";
 
-export default function CharityTable({
-  loading,
-  charities,
-  onEdit,
-  onDelete,
+export default function AddCharityModal({
+  onClose,
+  onSuccess,
 }) {
-  if (loading) {
-    return (
-      <div className="bg-zinc-900 rounded-2xl p-8 animate-pulse">
-        <div className="h-10 bg-zinc-800 rounded mb-4"></div>
+  const [loading, setLoading] =
+    useState(false);
 
-        {[1, 2, 3, 4, 5].map((item) => (
-          <div
-            key={item}
-            className="h-16 bg-zinc-800 rounded mb-3"
-          />
-        ))}
-      </div>
-    );
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    image: "",
+    featured: false,
+    events: [],
+  });
+
+  const [event, setEvent] =
+    useState({
+      title: "",
+      date: "",
+    });
+
+  function handleChange(e) {
+    const { name, value, type, checked } =
+      e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value,
+    }));
   }
 
-  if (charities.length === 0) {
-    return (
-      <div className="bg-zinc-900 rounded-2xl p-16 text-center border border-zinc-800">
+  function addEvent() {
+    if (
+      !event.title.trim() ||
+      !event.date
+    ) {
+      return toast.error(
+        "Enter event title and date"
+      );
+    }
 
-        <h2 className="text-3xl font-bold text-white">
-          No Charity Found
-        </h2>
+    setForm((prev) => ({
+      ...prev,
+      events: [
+        ...prev.events,
+        event,
+      ],
+    }));
 
-        <p className="text-zinc-400 mt-3">
-          Create your first charity.
-        </p>
+    setEvent({
+      title: "",
+      date: "",
+    });
+  }
 
-      </div>
-    );
+  function removeEvent(index) {
+    setForm((prev) => ({
+      ...prev,
+      events: prev.events.filter(
+        (_, i) => i !== index
+      ),
+    }));
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+
+    try {
+      setLoading(true);
+
+      await api.post(
+        "/charity",
+        form
+      );
+
+      toast.success(
+        "Charity Added Successfully"
+      );
+
+      onSuccess();
+    } catch (err) {
+      toast.error(
+        err.response?.data?.error ||
+          "Unable to add charity"
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="overflow-x-auto bg-zinc-900 rounded-2xl border border-zinc-800 shadow-xl">
+    <div className="fixed inset-0 z-50 bg-black/70 flex justify-center items-center p-4">
 
-      <table className="w-full">
+      <div className="bg-zinc-900 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
 
-        <thead className="bg-zinc-800">
+        <div className="flex justify-between items-center border-b border-zinc-800 p-6">
 
-          <tr>
+          <h2 className="text-2xl font-bold">
+            Add Charity
+          </h2>
 
-            <th className="text-left p-4 text-white">
-              Image
-            </th>
+          <button
+            onClick={onClose}
+            className="text-2xl"
+          >
+            <FaTimes />
+          </button>
 
-            <th className="text-left p-4 text-white">
-              Charity
-            </th>
+        </div>
 
-            <th className="text-left p-4 text-white">
+        <form
+          onSubmit={submit}
+          className="p-6 space-y-6"
+        >
+
+          <div>
+
+            <label>
+              Charity Name
+            </label>
+
+            <input
+              name="name"
+              required
+              value={form.name}
+              onChange={handleChange}
+              className="w-full mt-2 bg-zinc-800 rounded-xl p-3"
+            />
+
+          </div>
+
+          <div>
+
+            <label>
               Description
-            </th>
+            </label>
 
-            <th className="text-center p-4 text-white">
-              Events
-            </th>
+            <textarea
+              rows={5}
+              required
+              name="description"
+              value={
+                form.description
+              }
+              onChange={handleChange}
+              className="w-full mt-2 bg-zinc-800 rounded-xl p-3"
+            />
 
-            <th className="text-center p-4 text-white">
-              Featured
-            </th>
+          </div>
 
-            <th className="text-center p-4 text-white">
-              Created
-            </th>
+          <div>
 
-            <th className="text-center p-4 text-white">
-              Actions
-            </th>
+            <label>
+              Image URL
+            </label>
 
-          </tr>
+            <input
+              name="image"
+              value={form.image}
+              onChange={handleChange}
+              className="w-full mt-2 bg-zinc-800 rounded-xl p-3"
+            />
 
-        </thead>
+          </div>
 
-        <tbody>
+          <label className="flex items-center gap-3">
 
-          {charities.map((charity) => (
+            <input
+              type="checkbox"
+              name="featured"
+              checked={
+                form.featured
+              }
+              onChange={handleChange}
+            />
 
-            <tr
-              key={charity._id}
-              className="border-b border-zinc-800 hover:bg-zinc-800 transition"
+            Featured Charity
+
+          </label>
+
+          <div className="border border-zinc-700 rounded-2xl p-5 space-y-4">
+
+            <h3 className="font-bold text-xl">
+              Charity Events
+            </h3>
+
+            <div className="grid md:grid-cols-2 gap-4">
+
+              <input
+                placeholder="Event Title"
+                value={event.title}
+                onChange={(e) =>
+                  setEvent({
+                    ...event,
+                    title:
+                      e.target.value,
+                  })
+                }
+                className="bg-zinc-800 rounded-xl p-3"
+              />
+
+              <input
+                type="date"
+                value={event.date}
+                onChange={(e) =>
+                  setEvent({
+                    ...event,
+                    date:
+                      e.target.value,
+                  })
+                }
+                className="bg-zinc-800 rounded-xl p-3"
+              />
+
+            </div>
+
+            <button
+              type="button"
+              onClick={addEvent}
+              className="bg-blue-600 hover:bg-blue-700 px-5 py-3 rounded-xl flex items-center gap-2"
             >
 
-              {/* Image */}
+              <FaPlus />
 
-              <td className="p-4">
+              Add Event
 
-                <img
-                  src={
-                    charity.image ||
-                    "https://placehold.co/80x80"
-                  }
-                  alt={charity.name}
-                  className="w-16 h-16 rounded-xl object-cover"
-                />
+            </button>
 
-              </td>
+            {form.events.length >
+              0 && (
+              <div className="space-y-3">
 
-              {/* Name */}
+                {form.events.map(
+                  (
+                    item,
+                    index
+                  ) => (
 
-              <td className="p-4">
+                    <div
+                      key={index}
+                      className="bg-zinc-800 rounded-xl p-4 flex justify-between items-center"
+                    >
 
-                <h2 className="font-bold text-white">
+                      <div>
 
-                  {charity.name}
+                        <p className="font-bold">
 
-                </h2>
+                          {item.title}
 
-              </td>
+                        </p>
 
-              {/* Description */}
+                        <p className="text-zinc-400">
 
-              <td className="p-4">
+                          {item.date}
 
-                <p className="text-zinc-400 line-clamp-2">
+                        </p>
 
-                  {charity.description}
+                      </div>
 
-                </p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeEvent(
+                            index
+                          )
+                        }
+                        className="bg-red-600 p-3 rounded-lg"
+                      >
 
-              </td>
+                        <FaTrash />
 
-              {/* Events */}
+                      </button>
 
-              <td className="text-center p-4">
+                    </div>
 
-                <span className="bg-blue-600 px-3 py-1 rounded-full text-sm">
-
-                  {charity.events?.length || 0}
-
-                </span>
-
-              </td>
-
-              {/* Featured */}
-
-              <td className="text-center p-4">
-
-                {charity.featured ? (
-
-                  <span className="bg-yellow-500 text-black px-3 py-1 rounded-full inline-flex items-center gap-2">
-
-                    <FaStar />
-
-                    Yes
-
-                  </span>
-
-                ) : (
-
-                  <span className="text-zinc-500">
-
-                    No
-
-                  </span>
-
+                  )
                 )}
 
-              </td>
+              </div>
+            )}
 
-              {/* Created */}
+          </div>
 
-              <td className="text-center p-4 text-zinc-400">
+          <button
+            disabled={loading}
+            className="w-full bg-emerald-600 hover:bg-emerald-500 rounded-xl p-4 font-bold"
+          >
 
-                {new Date(
-                  charity.createdAt
-                ).toLocaleDateString()}
+            {loading
+              ? "Creating..."
+              : "Create Charity"}
 
-              </td>
+          </button>
 
-              {/* Actions */}
+        </form>
 
-              <td className="text-center p-4">
-
-                <div className="flex justify-center gap-3">
-
-                  <a
-                    href={`/charity/${charity._id}`}
-                    target="_blank"
-                    className="bg-green-600 hover:bg-green-700 p-3 rounded-lg"
-                  >
-                    <FaEye />
-                  </a>
-
-                  <button
-                    onClick={() =>
-                      onEdit(charity)
-                    }
-                    className="bg-yellow-500 hover:bg-yellow-600 p-3 rounded-lg"
-                  >
-                    <FaEdit />
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      onDelete(charity)
-                    }
-                    className="bg-red-600 hover:bg-red-700 p-3 rounded-lg"
-                  >
-                    <FaTrash />
-                  </button>
-
-                </div>
-
-              </td>
-
-            </tr>
-
-          ))}
-
-        </tbody>
-
-      </table>
+      </div>
 
     </div>
   );

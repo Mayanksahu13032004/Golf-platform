@@ -1,225 +1,298 @@
 "use client";
 
+import { useState } from "react";
+
+import api from "@/services/api";
+
+import toast from "react-hot-toast";
+
 import {
-  FaEye,
-  FaRocket,
+  FaDice,
+  FaTimes,
   FaCheckCircle,
-  FaClock,
+  FaCalendarAlt,
 } from "react-icons/fa";
 
-export default function DrawTable({
-  loading,
-  draws = [],
-  onView,
-  onPublish,
+export default function SimulateDrawModal({
+  onClose,
+  onSuccess,
 }) {
-  if (loading) {
-    return (
-      <div className="bg-zinc-900 rounded-3xl p-8 animate-pulse">
+  const [loading, setLoading] =
+    useState(false);
 
-        <div className="h-10 bg-zinc-800 rounded mb-6"></div>
+  const [draw, setDraw] =
+    useState(null);
 
-        {[1,2,3,4,5].map((i)=>(
-          <div
-            key={i}
-            className="h-16 bg-zinc-800 rounded mb-4"
-          />
-        ))}
+  async function simulateDraw() {
+    try {
+      setLoading(true);
 
-      </div>
-    );
-  }
+      const res =
+        await api.post(
+          "/draw/simulate"
+        );
 
-  if (draws.length === 0) {
-    return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-20 text-center">
+      setDraw(res.data.draw);
 
-        <h2 className="text-3xl font-bold text-white">
-          No Draws Available
-        </h2>
+      toast.success(
+        "Draw Simulated Successfully"
+      );
 
-        <p className="text-zinc-500 mt-3">
-          Simulate your first draw.
-        </p>
-
-      </div>
-    );
+      onSuccess();
+    } catch (err) {
+      toast.error(
+        err.response?.data?.error ||
+          "Simulation Failed"
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex justify-center items-center p-4">
 
-      <div className="overflow-x-auto">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl">
 
-        <table className="w-full">
+        {/* Header */}
 
-          <thead className="bg-zinc-800">
+        <div className="bg-gradient-to-r from-emerald-600 to-green-700 p-6 flex justify-between items-center">
 
-            <tr>
+          <div>
 
-              <th className="text-left p-5">
-                Draw
-              </th>
+            <h2 className="text-3xl font-bold text-white">
 
-              <th className="text-left p-5">
-                Date
-              </th>
+              Simulate Draw
 
-              <th className="text-left p-5">
-                Winning Numbers
-              </th>
+            </h2>
 
-              <th className="text-center p-5">
-                Prize Pool
-              </th>
+            <p className="text-green-100 mt-2">
 
-              <th className="text-center p-5">
-                Jackpot
-              </th>
+              Generate winning numbers for this month's draw.
 
-              <th className="text-center p-5">
-                Status
-              </th>
+            </p>
 
-              <th className="text-center p-5">
-                Actions
-              </th>
+          </div>
 
-            </tr>
+          <button
+            onClick={onClose}
+            className="text-2xl text-white"
+          >
+            <FaTimes />
+          </button>
 
-          </thead>
+        </div>
 
-          <tbody>
+        {/* Body */}
 
-            {draws.map((draw,index)=>(
+        <div className="p-8">
 
-              <tr
-                key={draw._id}
-                className="border-b border-zinc-800 hover:bg-zinc-800 transition"
-              >
+          {!draw ? (
 
-                {/* Draw */}
+            <>
+              <div className="bg-zinc-800 rounded-2xl p-6">
 
-                <td className="p-5">
+                <h3 className="text-xl font-bold text-white">
 
-                  <h2 className="font-bold text-white">
+                  What will happen?
 
-                    Draw #{index+1}
+                </h3>
+
+                <ul className="mt-5 space-y-3 text-zinc-300">
+
+                  <li>
+                    • Random winning numbers will be generated.
+                  </li>
+
+                  <li>
+                    • Draw status will become
+                    {" "}
+                    <b>SIMULATED</b>.
+                  </li>
+
+                  <li>
+                    • No winners will be calculated yet.
+                  </li>
+
+                  <li>
+                    • Winners are calculated only after publishing.
+                  </li>
+
+                </ul>
+
+              </div>
+
+              <div className="flex justify-end gap-4 mt-8">
+
+                <button
+                  onClick={onClose}
+                  className="bg-zinc-700 hover:bg-zinc-600 px-6 py-3 rounded-xl font-semibold"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  disabled={loading}
+                  onClick={simulateDraw}
+                  className="bg-emerald-600 hover:bg-emerald-700 px-8 py-3 rounded-xl flex items-center gap-3 font-bold disabled:opacity-50"
+                >
+
+                  <FaDice />
+
+                  {loading
+                    ? "Generating..."
+                    : "Simulate Draw"}
+
+                </button>
+
+              </div>
+            </>
+
+          ) : (
+
+            <div>
+
+              {/* Success */}
+
+              <div className="bg-green-900/30 border border-green-600 rounded-2xl p-6">
+
+                <h2 className="text-2xl text-green-400 font-bold flex items-center gap-3">
+
+                  <FaCheckCircle />
+
+                  Draw Created Successfully
+
+                </h2>
+
+              </div>
+
+              {/* Details */}
+
+              <div className="grid md:grid-cols-2 gap-5 mt-8">
+
+                <div className="bg-zinc-800 rounded-2xl p-5">
+
+                  <p className="text-zinc-500">
+
+                    Month
+
+                  </p>
+
+                  <h2 className="text-3xl font-bold mt-3">
+
+                    {draw.month}
 
                   </h2>
 
-                </td>
+                </div>
 
-                {/* Date */}
+                <div className="bg-zinc-800 rounded-2xl p-5">
 
-                <td className="p-5 text-zinc-400">
+                  <p className="text-zinc-500">
 
-                  {new Date(
-                    draw.createdAt
-                  ).toLocaleDateString()}
+                    Year
 
-                </td>
+                  </p>
 
-                {/* Winning Numbers */}
+                  <h2 className="text-3xl font-bold mt-3">
 
-                <td className="p-5">
+                    {draw.year}
 
-                  <div className="flex flex-wrap gap-2">
+                  </h2>
 
-                    {draw.winningNumbers?.map(
-                      (number)=>(
-                        <div
-                          key={number}
-                          className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold"
-                        >
-                          {number}
-                        </div>
-                      )
-                    )}
+                </div>
 
-                  </div>
+              </div>
 
-                </td>
+              {/* Winning Numbers */}
 
-                {/* Prize Pool */}
+              <div className="bg-zinc-800 rounded-2xl p-6 mt-6">
 
-                <td className="text-center p-5 font-bold text-green-400">
+                <p className="text-zinc-400 mb-5">
 
-                  ₹{draw.prizePool || 0}
+                  Winning Numbers
 
-                </td>
+                </p>
 
-                {/* Jackpot */}
+                <div className="flex flex-wrap gap-3">
 
-                <td className="text-center p-5 font-bold text-red-400">
+                  {draw.winningNumbers.map(
+                    (num) => (
 
-                  ₹{draw.rolloverAmount || 0}
+                      <div
+                        key={num}
+                        className="w-14 h-14 rounded-full bg-blue-600 flex justify-center items-center text-lg font-bold"
+                      >
 
-                </td>
+                        {num}
 
-                {/* Status */}
+                      </div>
 
-                <td className="text-center p-5">
-
-                  {draw.status==="PUBLISHED" ? (
-
-                    <span className="bg-green-600 px-4 py-2 rounded-full inline-flex items-center gap-2">
-
-                      <FaCheckCircle />
-
-                      Published
-
-                    </span>
-
-                  ) : (
-
-                    <span className="bg-yellow-600 px-4 py-2 rounded-full inline-flex items-center gap-2">
-
-                      <FaClock />
-
-                      Pending
-
-                    </span>
-
+                    )
                   )}
 
-                </td>
+                </div>
 
-                {/* Actions */}
+              </div>
 
-                <td className="text-center p-5">
+              {/* Status */}
 
-                  <div className="flex justify-center gap-3">
+              <div className="grid md:grid-cols-2 gap-5 mt-6">
 
-                    <button
-                      onClick={()=>onView(draw)}
-                      className="bg-blue-600 hover:bg-blue-700 p-3 rounded-xl"
-                    >
-                      <FaEye/>
-                    </button>
+                <div className="bg-zinc-800 rounded-2xl p-5">
 
-                    {draw.status!=="PUBLISHED" && (
+                  <p className="text-zinc-500">
 
-                      <button
-                        onClick={()=>onPublish(draw)}
-                        className="bg-green-600 hover:bg-green-700 p-3 rounded-xl"
-                      >
-                        <FaRocket/>
-                      </button>
+                    Status
 
-                    )}
+                  </p>
 
-                  </div>
+                  <h2 className="text-yellow-400 text-2xl font-bold mt-3">
 
-                </td>
+                    {draw.status}
 
-              </tr>
+                  </h2>
 
-            ))}
+                </div>
 
-          </tbody>
+                <div className="bg-zinc-800 rounded-2xl p-5">
 
-        </table>
+                  <p className="text-zinc-500">
+
+                    Created
+
+                  </p>
+
+                  <h2 className="text-blue-400 text-xl font-bold mt-3 flex items-center gap-3">
+
+                    <FaCalendarAlt />
+
+                    {new Date(
+                      draw.createdAt
+                    ).toLocaleString()}
+
+                  </h2>
+
+                </div>
+
+              </div>
+
+              <div className="flex justify-end mt-8">
+
+                <button
+                  onClick={onClose}
+                  className="bg-emerald-600 hover:bg-emerald-700 px-8 py-3 rounded-xl font-bold"
+                >
+                  Done
+                </button>
+
+              </div>
+
+            </div>
+
+          )}
+
+        </div>
 
       </div>
 

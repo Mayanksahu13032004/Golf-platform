@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 
 import connectDB from "@/lib/db";
 import User from "@/models/User";
+import { sendWelcomeEmail } from "@/lib/sendWelcomeEmail";
 
 export async function POST(request) {
   try {
@@ -25,18 +26,18 @@ export async function POST(request) {
     }
 
     // 2. Strict Gmail Validation
-    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-    if (!gmailRegex.test(email)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Please provide a valid @gmail.com email address",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
+    // const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    // if (!gmailRegex.test(email)) {
+    //   return NextResponse.json(
+    //     {
+    //       success: false,
+    //       message: "Please provide a valid @gmail.com email address",
+    //     },
+    //     {
+    //       status: 400,
+    //     }
+    //   );
+    // }
 
     // 3. Password Validation (Min 8 chars, 1 Uppercase, 1 Number, 1 Special Char)
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -77,6 +78,11 @@ export async function POST(request) {
       email,
       password: hashedPassword,
     });
+await sendWelcomeEmail({
+  name: user.name,
+  email: user.email,
+});
+
 
     return NextResponse.json(
       {

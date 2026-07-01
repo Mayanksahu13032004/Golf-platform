@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import toast from "react-hot-toast";
+import api from "@/services/api";
+
 import {
   FaTrash,
   FaTimes,
@@ -9,162 +13,134 @@ import {
 export default function DeleteCharityModal({
   charity,
   onClose,
-  onDelete,
+  onSuccess,
 }) {
-  return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  const [loading, setLoading] =
+    useState(false);
 
-      <div className="w-full max-w-lg bg-zinc-900 border border-red-700 rounded-3xl overflow-hidden shadow-2xl">
+  async function deleteCharity() {
+    try {
+      setLoading(true);
+
+      await api.delete(
+        `/charity/${charity._id}`
+      );
+
+      toast.success(
+        "Charity Deleted Successfully"
+      );
+
+      onSuccess();
+
+    } catch (err) {
+
+      toast.error(
+        err.response?.data?.error ||
+        "Unable to delete charity"
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  }
+
+  return (
+
+    <div className="fixed inset-0 z-50 bg-black/70 flex justify-center items-center p-4">
+
+      <div className="bg-zinc-900 rounded-3xl w-full max-w-lg border border-zinc-800 overflow-hidden">
 
         {/* Header */}
 
-        <div className="bg-red-600 p-6 flex items-center gap-4">
+        <div className="flex justify-between items-center p-6 border-b border-zinc-800">
 
-          <div className="bg-white/20 p-4 rounded-full">
+          <h2 className="text-2xl font-bold text-white">
 
-            <FaExclamationTriangle className="text-3xl text-white" />
+            Delete Charity
 
-          </div>
+          </h2>
 
-          <div>
-
-            <h2 className="text-3xl font-bold text-white">
-              Delete Charity
-            </h2>
-
-            <p className="text-red-100 mt-1">
-              This action cannot be undone.
-            </p>
-
-          </div>
+          <button
+            onClick={onClose}
+            className="text-zinc-400 hover:text-white text-xl"
+          >
+            <FaTimes />
+          </button>
 
         </div>
 
         {/* Body */}
 
-        <div className="p-8">
+        <div className="p-8 text-center">
 
-          <p className="text-zinc-300 text-lg leading-8">
+          <div className="mx-auto w-20 h-20 rounded-full bg-red-600/20 flex items-center justify-center mb-6">
+
+            <FaExclamationTriangle className="text-4xl text-red-500" />
+
+          </div>
+
+          <h3 className="text-2xl font-bold">
+
+            Are you sure?
+
+          </h3>
+
+          <p className="text-zinc-400 mt-4 leading-7">
 
             You are about to permanently delete
 
-            <span className="font-bold text-white">
+            <span className="text-white font-semibold">
+
               {" "}
-              {charity?.name}
+              {charity.name}
+
             </span>
 
             .
 
+            <br />
+
+            This action cannot be undone.
+
           </p>
 
-          <div className="bg-zinc-800 border border-zinc-700 rounded-2xl p-5 mt-6">
+        </div>
 
-            <h3 className="text-white font-bold mb-3">
-              Charity Information
-            </h3>
+        {/* Footer */}
 
-            <div className="space-y-3">
+        <div className="border-t border-zinc-800 p-6 flex flex-col sm:flex-row gap-4">
 
-              <div className="flex justify-between">
+          <button
+            onClick={onClose}
+            className="flex-1 bg-zinc-800 hover:bg-zinc-700 rounded-xl py-3 font-semibold transition"
+          >
 
-                <span className="text-zinc-400">
-                  Name
-                </span>
+            Cancel
 
-                <span className="text-white font-semibold">
-                  {charity?.name}
-                </span>
+          </button>
 
-              </div>
+          <button
+            onClick={deleteCharity}
+            disabled={loading}
+            className="flex-1 bg-red-600 hover:bg-red-700 rounded-xl py-3 font-semibold flex justify-center items-center gap-3 transition disabled:opacity-50"
+          >
 
-              <div className="flex justify-between">
+            <FaTrash />
 
-                <span className="text-zinc-400">
-                  Events
-                </span>
+            {loading
+              ? "Deleting..."
+              : "Delete Charity"}
 
-                <span className="text-white font-semibold">
-                  {charity?.events?.length || 0}
-                </span>
-
-              </div>
-
-              <div className="flex justify-between">
-
-                <span className="text-zinc-400">
-                  Featured
-                </span>
-
-                <span
-                  className={`font-semibold ${
-                    charity?.featured
-                      ? "text-yellow-400"
-                      : "text-zinc-500"
-                  }`}
-                >
-                  {charity?.featured
-                    ? "Yes"
-                    : "No"}
-                </span>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Warning */}
-
-          <div className="bg-red-950 border border-red-700 rounded-xl p-4 mt-6">
-
-            <p className="text-red-300">
-
-              ⚠ Deleting this charity will permanently remove:
-
-            </p>
-
-            <ul className="text-red-200 mt-3 list-disc list-inside space-y-2">
-
-              <li>Charity Details</li>
-
-              <li>Charity Image</li>
-
-              <li>Upcoming Events</li>
-
-              <li>Featured Status</li>
-
-            </ul>
-
-          </div>
-
-          {/* Buttons */}
-
-          <div className="flex justify-end gap-4 mt-8">
-
-            <button
-              onClick={onClose}
-              className="px-6 py-3 rounded-xl bg-zinc-700 hover:bg-zinc-600 text-white flex items-center gap-3"
-            >
-              <FaTimes />
-
-              Cancel
-            </button>
-
-            <button
-              onClick={onDelete}
-              className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white flex items-center gap-3"
-            >
-              <FaTrash />
-
-              Delete Charity
-            </button>
-
-          </div>
+          </button>
 
         </div>
 
       </div>
 
     </div>
+
   );
+
 }
